@@ -31,12 +31,10 @@ app_settings for this::
 TODO
 ----
 
-- pub/sub
-- tests
 - stats
 - api endpoint to...
   - inspect, get stats
   - clear
 - follow tpc_* pattern
   - invalidations should technically happen prior to commit to prevent
-    any potential issues...
+    any potential issues?
