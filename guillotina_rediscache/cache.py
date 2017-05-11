@@ -9,12 +9,23 @@ import aioredis
 _local = threading.local()
 
 
-async def get_redis_pool():
+async def close_redis_pool():
+    if hasattr(_local, 'redis_pool'):
+        pool = _local.redis_pool
+        try:
+            await pool.clear()
+        except RuntimeError:
+            pass
+        del _local.redis_pool
+
+
+async def get_redis_pool(loop=None):
     if not hasattr(_local, 'redis_pool'):
         settings = app_settings['redis']
         _local.redis_pool = await aioredis.create_pool(
             (settings['host'], settings['port']),
-            **settings['pool'])
+            **settings['pool'],
+            loop=loop)
     return _local.redis_pool
 
 

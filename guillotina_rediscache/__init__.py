@@ -7,6 +7,7 @@ app_settings = {
         'port': 6379,
         'ttl': 3600,
         'memory_cache_size': 1000,
+        'updates_channel': 'guillotina',
         'pool': {
             'minsize': 5,
             'maxsize': 100
@@ -17,3 +18,4 @@ app_settings = {
 
 def includeme(root, settings):
     configure.scan('guillotina_rediscache.cache_strategy')
+    configure.scan('guillotina_rediscache.utility')

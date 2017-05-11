@@ -1,4 +1,5 @@
-from guillotina import configure, app_settings
+from guillotina import app_settings
+from guillotina import configure
 from guillotina.db.cache.base import BaseCache
 from guillotina.db.interfaces import IStorage
 from guillotina.db.interfaces import IStorageCache
@@ -7,6 +8,7 @@ from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
 
 import asyncio
+import json
 import logging
 
 
@@ -17,15 +19,18 @@ logger = logging.getLogger('guillotina_rediscache')
                    name="redis")
 class RedisCache(BaseCache):
 
-    def __init__(self, storage, transaction):
+    def __init__(self, storage, transaction, loop=None):
         self._storage = storage
         self._transaction = transaction
+        self._loop = loop
+
         self._conn = None
         self._memory_cache = cache.get_memory_cache()
+        self._settings = app_settings.get('redis', {})
 
     async def get_conn(self):
         if self._conn is None:
-            self._conn = await (await cache.get_redis_pool()).acquire()
+            self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
         return self._conn
 
     async def get(self, **kwargs):
@@ -48,10 +53,9 @@ class RedisCache(BaseCache):
         key = self.get_key(**kwargs)
         try:
             conn = await self.get_conn()
-            value = serialize.dumps(value)
             self._memory_cache[key] = value
-            await conn.set(key, value,
-                           expire=app_settings.get('redis', {}).get('ttl', 3600))
+            await conn.set(key, serialize.dumps(value),
+                           expire=self._settings.get('ttl', 3600))
             logger.debug('set {} in cache'.format(key))
         except Exception:
             logger.warn('Error setting cache value', exc_info=True)
@@ -60,7 +64,7 @@ class RedisCache(BaseCache):
         try:
             self._memory_cache.clear()
             conn = await self.get_conn()
-            await conn.clear()
+            await conn.flushall()
             logger.debug('Cleared cache')
         except Exception:
             logger.warn('Error clearing cache', exc_info=True)
@@ -82,11 +86,11 @@ class RedisCache(BaseCache):
     async def close(self, invalidate=False):
         try:
             if self._conn is None:
-                if (len(self._transaction.objects_needing_invalidation) == 0 or
-                        not invalidate):
+                if len(self._transaction.modified) == 0 or not invalidate:
                     return
-                self._conn = await (await cache.get_redis_pool()).acquire()
+                self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
 
+            invalidated = []
             if invalidate:
                 batch = []
                 # now work ob invalidations...
@@ -95,6 +99,7 @@ class RedisCache(BaseCache):
                 #   - added objects are not in the cache yet...
                 for oid, ob in self._transaction.modified.items():
                     for key in self.get_cache_keys(ob):
+                        invalidated.append(key)
                         if key in self._memory_cache:
                             del self._memory_cache[key]
                         batch.append(self.delete(key))
@@ -104,7 +109,11 @@ class RedisCache(BaseCache):
                 if len(batch) >= 0:
                     await asyncio.gather(*batch)
 
-            cpool = await cache.get_redis_pool()
-            cpool.release(self._conn)
+            await self._conn.publish(self._settings['updates_channel'], json.dumps({
+                'tid': self._transaction._tid,
+                'keys': invalidated
+            }))
+            pool = await cache.get_redis_pool(self._loop)
+            pool.release(self._conn)
         except Exception:
             logger.warn('Error closing cache connection', exc_info=True)

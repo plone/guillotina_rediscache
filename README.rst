@@ -37,3 +37,6 @@ TODO
 - api endpoint to...
   - inspect, get stats
   - clear
+- follow tpc_* pattern
+  - invalidations should technically happen prior to commit to prevent
+    any potential issues...
