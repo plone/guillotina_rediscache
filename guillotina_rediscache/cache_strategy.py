@@ -1,14 +1,15 @@
 from guillotina import app_settings
 from guillotina import configure
+from guillotina.component import getUtility
 from guillotina.db.cache.base import BaseCache
 from guillotina.db.interfaces import IStorage
 from guillotina.db.interfaces import IStorageCache
 from guillotina.db.interfaces import ITransaction
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
+from guillotina_rediscache.interfaces import IRedisUtility
 
 import asyncio
-import json
 import logging
 
 
@@ -109,10 +110,12 @@ class RedisCache(BaseCache):
                 if len(batch) >= 0:
                     await asyncio.gather(*batch)
 
-            await self._conn.publish(self._settings['updates_channel'], json.dumps({
+            utility = getUtility(IRedisUtility)
+            utility.ignore_tid(self._transaction._tid)
+            await self._conn.publish_json(self._settings['updates_channel'], {
                 'tid': self._transaction._tid,
                 'keys': invalidated
-            }))
+            })
             pool = await cache.get_redis_pool(self._loop)
             pool.release(self._conn)
         except Exception:
