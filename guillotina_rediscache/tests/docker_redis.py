@@ -1,7 +1,7 @@
 from time import sleep
 
 
-REDIS_IMAGE = 'redis'
+REDIS_IMAGE = 'redis:3.2.8'
 
 
 def run_docker_redis(label='testingredis'):
