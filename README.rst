@@ -1,6 +1,10 @@
 Introduction
 ============
 
+.. image:: https://travis-ci.org/guillotinaweb/guillotina_rediscache.svg?branch=master
+   :target: https://travis-ci.org/guillotinaweb/guillotina_rediscache
+
+
 `guillotina_rediscache` implements redis into guillotina with an additional
 in-memory layer cache.
 
