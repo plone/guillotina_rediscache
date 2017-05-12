@@ -26,8 +26,7 @@ def run_docker_redis(label='testingredis'):
             '6379/tcp': 6379
         },
         cap_add=['IPC_LOCK'],
-        mem_limit='200m',
-        privileged=True
+        mem_limit='200m'
     )
     ident = container.id
     count = 1
