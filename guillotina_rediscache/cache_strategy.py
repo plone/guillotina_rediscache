@@ -7,9 +7,8 @@ from guillotina.db.interfaces import IStorageCache
 from guillotina.db.interfaces import ITransaction
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
-from guillotina_rediscache.interfaces import IRedisUtility
+from guillotina_rediscache.interfaces import IRedisChannelUtility
 
-import asyncio
 import logging
 
 
@@ -38,12 +37,12 @@ class RedisCache(BaseCache):
         key = self.get_key(**kwargs)
         try:
             if key in self._memory_cache:
-                logger.debug('Retrieved {} from memory cache'.format(key))
+                logger.info('Retrieved {} from memory cache'.format(key))
                 return self._memory_cache[key]
             conn = await self.get_conn()
             val = await conn.get(key)
             if val is not None:
-                logger.debug('Retrieved {} from redis cache'.format(key))
+                logger.info('Retrieved {} from redis cache'.format(key))
                 val = serialize.loads(val)
                 self._memory_cache[key] = val
             return val
@@ -57,7 +56,7 @@ class RedisCache(BaseCache):
             self._memory_cache[key] = value
             await conn.set(key, serialize.dumps(value),
                            expire=self._settings.get('ttl', 3600))
-            logger.debug('set {} in cache'.format(key))
+            logger.info('set {} in cache'.format(key))
         except Exception:
             logger.warn('Error setting cache value', exc_info=True)
 
@@ -66,7 +65,7 @@ class RedisCache(BaseCache):
             self._memory_cache.clear()
             conn = await self.get_conn()
             await conn.flushall()
-            logger.debug('Cleared cache')
+            logger.info('Cleared cache')
         except Exception:
             logger.warn('Error clearing cache', exc_info=True)
 
@@ -76,7 +75,7 @@ class RedisCache(BaseCache):
             if key in self._memory_cache:
                 del self._memory_cache[key]
             await conn.delete(key)
-            logger.debug('Deleted cache key {}'.format(key))
+            logger.info('Deleted cache key {}'.format(key))
         except:
             logger.warn('Error deleting cache key {}'.format(key), exc_info=True)
 
@@ -84,39 +83,44 @@ class RedisCache(BaseCache):
         for key in keys:
             await self.delete(key)
 
-    async def close(self, invalidate=False):
+    async def _invalidate_keys(self, data, type_):
+        for oid, ob in data.items():
+            for key in self.get_cache_keys(ob, type_):
+                await self.delete(key)
+                if key in self._memory_cache:
+                    del self._memory_cache[key]
+
+    async def close(self, invalidate=True):
         try:
             if self._conn is None:
                 if len(self._transaction.modified) == 0 or not invalidate:
                     return
                 self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
 
-            invalidated = []
+            keys = []
             if invalidate:
-                batch = []
-                # now work ob invalidations...
-                # we only care about modified objects because:
-                #   - deleted objects will expire on their own
-                #   - added objects are not in the cache yet...
-                for oid, ob in self._transaction.modified.items():
-                    for key in self.get_cache_keys(ob):
-                        invalidated.append(key)
-                        if key in self._memory_cache:
-                            del self._memory_cache[key]
-                        batch.append(self.delete(key))
-                        if len(batch) >= 10:
-                            await asyncio.gather(*batch)
-                            batch = []
-                if len(batch) >= 0:
-                    await asyncio.gather(*batch)
+                await self._invalidate_keys(self._transaction.modified, 'modified')
+                await self._invalidate_keys(self._transaction.added, 'added')
+                await self._invalidate_keys(self._transaction.deleted, 'deleted')
 
-            utility = getUtility(IRedisUtility)
-            utility.ignore_tid(self._transaction._tid)
-            await self._conn.publish_json(self._settings['updates_channel'], {
-                'tid': self._transaction._tid,
-                'keys': invalidated
-            })
+            if len(keys) > 0:
+                channel_utility = getUtility(IRedisChannelUtility)
+                channel_utility.ignore_tid(self._transaction._tid)
+
+                await self._conn.publish_json(self._settings['updates_channel'], {
+                    'tid': self._transaction._tid,
+                    'keys': keys
+                })
+
+            await self._close(keys)
+
+        except Exception:
+            logger.warn('Error closing connection', exc_info=True)
+
+    async def _close(self, keys=[]):
+        try:
             pool = await cache.get_redis_pool(self._loop)
-            pool.release(self._conn)
+            if self._conn in pool._used:
+                pool.release(self._conn)
         except Exception:
             logger.warn('Error closing cache connection', exc_info=True)

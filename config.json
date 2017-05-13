@@ -1,9 +1,10 @@
 {
+	"store_json": false,
 	"applications": ["guillotina_rediscache"],
 	"databases": [{
 		"db": {
 			"storage": "postgresql",
-			"transaction_strategy": "merge",
+			"transaction_strategy": "resolve",
       "cache_strategy": "redis",
       "dsn": {
         "scheme": "postgres",

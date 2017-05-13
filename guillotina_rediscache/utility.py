@@ -1,7 +1,7 @@
 from guillotina import app_settings
 from guillotina import configure
 from guillotina_rediscache import cache
-from guillotina_rediscache.interfaces import IRedisUtility
+from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import asyncio
 import logging
@@ -10,8 +10,8 @@ import logging
 logger = logging.getLogger('guillotina_rediscache')
 
 
-@configure.utility(provides=IRedisUtility)
-class RedisUtility:
+@configure.utility(provides=IRedisChannelUtility)
+class RedisChannelUtility:
 
     def __init__(self, settings=None, loop=None):
         self._loop = loop
@@ -41,7 +41,7 @@ class RedisUtility:
                     exc_info=True)
                 await asyncio.sleep(5)
 
-    async def finalize(self):
+    async def finalize(self, app):
         settings = app_settings['redis']
         if self._conn is not None:
             await self._conn.unsubscribe(settings['updates_channel'])
@@ -63,3 +63,41 @@ class RedisUtility:
     def ignore_tid(self, tid):
         # so we don't invalidate twice...
         self._ignored_tids.append(tid)
+
+
+# unused right now, for some reason it's slower this way? maybe because we
+# get more conflicts
+# @configure.utility(provides=IRedisQueueUtility)
+class RedisQueueUtility:
+
+    def __init__(self, settings=None, loop=None):
+        self._loop = loop
+        self._settings = {}
+        self._conn = None
+
+    async def initialize(self, app=None):
+        self._queue = asyncio.Queue()
+
+        while True:
+            try:
+                _type, group = await self._queue.get()
+                self._pool = await cache.get_redis_pool(self._loop)
+                self._conn = await self._pool.acquire()
+                if _type == 'delete':
+                    for key in group:
+                        await self._conn.delete(key)
+            except Exception:
+                try:
+                    self._pool.release(self._conn)
+                except (AttributeError, RuntimeError):
+                    pass
+                logger.warn(
+                    'Error invalidating queue',
+                    exc_info=True)
+                await asyncio.sleep(1)
+
+    async def finalize(self, app):
+        pass
+
+    async def push_deletes(self, keys):
+        await self._queue.put(('delete', keys))
