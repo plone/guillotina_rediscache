@@ -3,7 +3,7 @@ from guillotina.tests import mocks
 from guillotina_rediscache import cache
 from guillotina.tests.utils import create_content
 from guillotina import app_settings
-from guillotina_rediscache.interfaces import IRedisUtility
+from guillotina_rediscache.interfaces import IRedisChannelUtility
 from guillotina.component import getUtility
 import asyncio
 
@@ -118,7 +118,7 @@ async def test_subscriber_ignores_trsn_on_invalidate(redis, dummy_guillotina, lo
 
     assert content._p_oid in rcache._memory_cache
 
-    utility = getUtility(IRedisUtility)
+    utility = getUtility(IRedisChannelUtility)
     utility.ignore_tid(5555)
 
     await rcache._conn.publish_json(app_settings['redis']['updates_channel'], {
