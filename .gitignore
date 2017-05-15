@@ -2,5 +2,4 @@
 .eggs/
 include/
 lib/
-pip-selfcheck.json
 profile.output
