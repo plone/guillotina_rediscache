@@ -2,6 +2,7 @@ from guillotina import app_settings
 from guillotina import configure
 from guillotina_rediscache import cache
 from guillotina_rediscache.interfaces import IRedisChannelUtility
+from guillotina_rediscache.interfaces import IRedisUtility
 
 import asyncio
 import logging
@@ -67,13 +68,25 @@ class RedisChannelUtility:
 
 # unused right now, for some reason it's slower this way? maybe because we
 # get more conflicts
-# @configure.utility(provides=IRedisQueueUtility)
-class RedisQueueUtility:
+# @configure.utility(provides=IRedisUtility)
+class RedisUtility:
 
     def __init__(self, settings=None, loop=None):
         self._loop = loop
         self._settings = {}
         self._conn = None
+        self._pool = None
+
+    async def get_pool(self):
+        if self._pool is None:
+            self._pool = await cache.get_redis_pool(self._loop)
+        return self._pool
+
+    async def get_conn(self):
+        if self._conn is None:
+            pool = await self.get_pool()
+            self._conn = await pool.acquire()
+        return self._conn
 
     async def initialize(self, app=None):
         self._queue = asyncio.Queue()
@@ -81,16 +94,11 @@ class RedisQueueUtility:
         while True:
             try:
                 _type, group = await self._queue.get()
-                self._pool = await cache.get_redis_pool(self._loop)
-                self._conn = await self._pool.acquire()
+                conn = await self.get_conn()
                 if _type == 'delete':
                     for key in group:
-                        await self._conn.delete(key)
+                        await conn.delete(key)
             except Exception:
-                try:
-                    self._pool.release(self._conn)
-                except (AttributeError, RuntimeError):
-                    pass
                 logger.warn(
                     'Error invalidating queue',
                     exc_info=True)

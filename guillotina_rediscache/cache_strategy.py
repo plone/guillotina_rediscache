@@ -28,6 +28,8 @@ class RedisCache(BaseCache):
         self._memory_cache = cache.get_memory_cache()
         self._settings = app_settings.get('redis', {})
 
+        # self._utility = getUtility(IRedisUtility)
+
     async def get_conn(self):
         if self._conn is None:
             self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
