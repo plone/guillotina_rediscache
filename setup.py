@@ -6,10 +6,10 @@ from setuptools import setup
 setup(
     name='guillotina_rediscache',
     version='1.0.0',
-    description='',  # noqa
+    description='guillotina cache implementation using redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
                       open('CHANGELOG.rst').read()),
-    keywords=['asyncio', 'REST', 'Framework', 'transactional'],
+    keywords=['asyncio', 'REST', 'guillotina', 'cache', 'redis'],
     author='Nathan Van Gheem',
     author_email='vangheem@gmail.com',
     classifiers=[
@@ -20,7 +20,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    url='https://github.com/plone/guillotina',
+    url='https://github.com/guillotinaweb/guillotina_rediscache',
     license='BSD',
     setup_requires=[
         'pytest-runner',
