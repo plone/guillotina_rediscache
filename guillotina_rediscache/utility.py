@@ -2,7 +2,6 @@ from guillotina import app_settings
 from guillotina import configure
 from guillotina_rediscache import cache
 from guillotina_rediscache.interfaces import IRedisChannelUtility
-from guillotina_rediscache.interfaces import IRedisUtility
 
 import asyncio
 import logging
