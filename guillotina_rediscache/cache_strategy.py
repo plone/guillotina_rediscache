@@ -86,11 +86,14 @@ class RedisCache(BaseCache):
             await self.delete(key)
 
     async def _invalidate_keys(self, data, type_):
+        invalidated = []
         for oid, ob in data.items():
             for key in self.get_cache_keys(ob, type_):
+                invalidated.append(key)
                 await self.delete(key)
                 if key in self._memory_cache:
                     del self._memory_cache[key]
+        return invalidated
 
     async def close(self, invalidate=True):
         try:
@@ -101,9 +104,12 @@ class RedisCache(BaseCache):
 
             keys = []
             if invalidate:
-                await self._invalidate_keys(self._transaction.modified, 'modified')
-                await self._invalidate_keys(self._transaction.added, 'added')
-                await self._invalidate_keys(self._transaction.deleted, 'deleted')
+                keys.extend(await self._invalidate_keys(
+                    self._transaction.modified, 'modified'))
+                keys.extend(await self._invalidate_keys(
+                    self._transaction.added, 'added'))
+                keys.extend(await self._invalidate_keys(
+                    self._transaction.deleted, 'deleted'))
 
             if len(keys) > 0:
                 channel_utility = getUtility(IRedisChannelUtility)
