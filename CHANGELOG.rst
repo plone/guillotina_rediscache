@@ -1,7 +1,8 @@
 1.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix delete not properly invalidating cache
+  [vangheem]
 
 
 1.0.2 (2017-05-15)

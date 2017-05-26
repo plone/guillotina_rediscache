@@ -98,7 +98,8 @@ class RedisCache(BaseCache):
     async def close(self, invalidate=True):
         try:
             if self._conn is None:
-                if len(self._transaction.modified) == 0 or not invalidate:
+                if not invalidate:
+                    # skip out, nothing to do
                     return
                 self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
 
