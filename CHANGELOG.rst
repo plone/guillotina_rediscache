@@ -1,4 +1,4 @@
-1.0.3 (unreleased)
+1.0.3 (2017-05-26)
 ------------------
 
 - Fix delete not properly invalidating cache
