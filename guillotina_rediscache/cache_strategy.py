@@ -49,7 +49,7 @@ class RedisCache(BaseCache):
                 self._memory_cache[key] = val
             return val
         except Exception:
-            logger.warn('Error getting cache value', exc_info=True)
+            logger.warning('Error getting cache value', exc_info=True)
 
     async def set(self, value, **kwargs):
         key = self.get_key(**kwargs)
@@ -60,7 +60,7 @@ class RedisCache(BaseCache):
                            expire=self._settings.get('ttl', 3600))
             logger.info('set {} in cache'.format(key))
         except Exception:
-            logger.warn('Error setting cache value', exc_info=True)
+            logger.warning('Error setting cache value', exc_info=True)
 
     async def clear(self):
         try:
@@ -69,7 +69,7 @@ class RedisCache(BaseCache):
             await conn.flushall()
             logger.info('Cleared cache')
         except Exception:
-            logger.warn('Error clearing cache', exc_info=True)
+            logger.warning('Error clearing cache', exc_info=True)
 
     async def delete(self, key):
         try:
@@ -79,7 +79,7 @@ class RedisCache(BaseCache):
             await conn.delete(key)
             logger.info('Deleted cache key {}'.format(key))
         except:
-            logger.warn('Error deleting cache key {}'.format(key), exc_info=True)
+            logger.warning('Error deleting cache key {}'.format(key), exc_info=True)
 
     async def delete_all(self, keys):
         for key in keys:
@@ -124,7 +124,7 @@ class RedisCache(BaseCache):
             await self._close(keys)
 
         except Exception:
-            logger.warn('Error closing connection', exc_info=True)
+            logger.warning('Error closing connection', exc_info=True)
 
     async def _close(self, keys=[]):
         try:
@@ -132,4 +132,4 @@ class RedisCache(BaseCache):
             if self._conn in pool._used:
                 pool.release(self._conn)
         except Exception:
-            logger.warn('Error closing cache connection', exc_info=True)
+            logger.warning('Error closing cache connection', exc_info=True)
