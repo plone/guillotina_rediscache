@@ -40,7 +40,8 @@ setup(
             'docker',
             'backoff',
             'psycopg2',
-            'pytest-asyncio',
+            'pytest-asyncio<=0.5.0',
+            'pytest_asyncio<=0.5.0',
             'pytest-aiohttp'
         ]
     }
