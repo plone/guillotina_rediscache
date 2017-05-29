@@ -10,7 +10,8 @@ import asyncio
 
 async def test_cache_set(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    rcache = RedisCache(mocks.MockStorage(), mocks.MockTransaction(), loop=loop)
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
+    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -26,7 +27,8 @@ async def test_cache_set(redis, dummy_guillotina, loop):
 
 async def test_cache_delete(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    rcache = RedisCache(mocks.MockStorage(), mocks.MockTransaction(), loop=loop)
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
+    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -44,7 +46,8 @@ async def test_cache_delete(redis, dummy_guillotina, loop):
 
 async def test_cache_clear(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    rcache = RedisCache(mocks.MockStorage(), mocks.MockTransaction(), loop=loop)
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
+    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -61,7 +64,7 @@ async def test_cache_clear(redis, dummy_guillotina, loop):
 
 async def test_invalidate_object(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    trns = mocks.MockTransaction()
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
     content = create_content()
     trns.modified = {content._p_oid: content}
     rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
@@ -80,7 +83,7 @@ async def test_invalidate_object(redis, dummy_guillotina, loop):
 
 async def test_subscriber_invalidates(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    trns = mocks.MockTransaction()
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
     content = create_content()
     trns.modified = {content._p_oid: content}
     rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
@@ -105,7 +108,7 @@ async def test_subscriber_invalidates(redis, dummy_guillotina, loop):
 
 async def test_subscriber_ignores_trsn_on_invalidate(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
-    trns = mocks.MockTransaction()
+    trns = mocks.MockTransaction(mocks.MockTransactionManager())
     content = create_content()
     trns.modified = {content._p_oid: content}
     rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
