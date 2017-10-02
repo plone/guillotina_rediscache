@@ -1,4 +1,4 @@
-1.0.5 (unreleased)
+1.0.5 (2017-10-02)
 ------------------
 
 - Track all keys needing invalidation and do invalidation in an async task
