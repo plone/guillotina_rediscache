@@ -9,6 +9,7 @@ from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
+import asyncio
 import logging
 
 
@@ -28,7 +29,7 @@ class RedisCache(BaseCache):
         self._memory_cache = cache.get_memory_cache()
         self._settings = app_settings.get('redis', {})
 
-        # self._utility = getUtility(IRedisUtility)
+        self._keys_to_invalidate = []
 
     async def get_conn(self):
         if self._conn is None:
@@ -72,6 +73,7 @@ class RedisCache(BaseCache):
             logger.warning('Error clearing cache', exc_info=True)
 
     async def delete(self, key):
+        self._keys_to_invalidate.append(key)
         try:
             conn = await self.get_conn()
             if key in self._memory_cache:
@@ -103,31 +105,35 @@ class RedisCache(BaseCache):
                     return
                 self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
 
-            keys = []
             if invalidate:
-                keys.extend(await self._invalidate_keys(
-                    self._transaction.modified, 'modified'))
-                keys.extend(await self._invalidate_keys(
-                    self._transaction.added, 'added'))
-                keys.extend(await self._invalidate_keys(
-                    self._transaction.deleted, 'deleted'))
+                await self._invalidate_keys(self._transaction.modified, 'modified')
+                await self._invalidate_keys(self._transaction.added, 'added')
+                await self._invalidate_keys(self._transaction.deleted, 'deleted')
 
-            if len(keys) > 0:
-                channel_utility = getUtility(IRedisChannelUtility)
-                channel_utility.ignore_tid(self._transaction._tid)
-
-                await self._conn.publish_json(self._settings['updates_channel'], {
-                    'tid': self._transaction._tid,
-                    'keys': keys
-                })
-
-            await self._close(keys)
+            # we can do this in a task and carry on with the request
+            await asyncio.ensure_future(self._synchronize_and_close())
 
         except Exception:
             logger.warning('Error closing connection', exc_info=True)
 
+    async def _synchronize_and_close(self):
+        '''
+        publish cache changes on redis
+        '''
+        if len(self._keys_to_invalidate) > 0:
+            channel_utility = getUtility(IRedisChannelUtility)
+            channel_utility.ignore_tid(self._transaction._tid)
+
+            await self._conn.publish_json(self._settings['updates_channel'], {
+                'tid': self._transaction._tid,
+                'keys': self._keys_to_invalidate
+            })
+
+        await self._close()
+
     async def _close(self, keys=[]):
         try:
+            self._keys_to_invalidate = []
             pool = await cache.get_redis_pool(self._loop)
             if self._conn in pool._used:
                 pool.release(self._conn)

@@ -1,7 +1,9 @@
 1.0.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Track all keys needing invalidation and do invalidation in an async task
+  so the request can finish faster.
+  [vangheem]
 
 
 1.0.4 (2017-05-29)
