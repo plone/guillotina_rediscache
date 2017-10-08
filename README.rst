@@ -19,6 +19,13 @@ Configuration
 app_settings for this::
 
     {
+      "databases": {
+        "db": {
+          ...
+          "cache_strategy": "redis"
+          ...
+        }
+      },
       "redis": {
           'host': 'localhost',
           'port': 6379,
@@ -30,12 +37,3 @@ app_settings for this::
           }
       }
     }
-
-
-TODO
-----
-
-- stats
-- api endpoint to...
-  - inspect, get stats
-  - clear
