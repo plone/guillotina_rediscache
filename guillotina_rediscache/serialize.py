@@ -1,6 +1,6 @@
 import asyncpg
 import base64
-import json
+import ujson
 
 
 def dumps(value):
@@ -14,19 +14,19 @@ def dumps(value):
         value = dict(value)
     if isinstance(value, dict):
         value['state'] = base64.b64encode(value['state']).decode('ascii')
-    return json.dumps(value)
+    return ujson.dumps(value)
 
 
 def loads(value):
     """
-    Deserialize value using ``json.loads``.
+    Deserialize value using ``ujson.loads``.
 
     :param value: str
     :returns: output of ``json.loads``.
     """
     if value is None:
         return None
-    value = json.loads(value)
+    value = ujson.loads(value)
     if isinstance(value, dict):
         if 'state' in value:
             value['state'] = base64.b64decode(value['state'].encode('ascii'))

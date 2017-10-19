@@ -5,6 +5,7 @@ from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import asyncio
 import logging
+import ujson
 
 
 logger = logging.getLogger('guillotina_rediscache')
@@ -29,7 +30,7 @@ class RedisChannelUtility:
                 res = await self._conn.subscribe(settings['updates_channel'])
                 ch = res[0]
                 while (await ch.wait_message()):
-                    msg = await ch.get_json()
+                    msg = ujson.loads(await ch.get(encoding='utf-8'))
                     await self.invalidate(msg)
             except Exception:
                 try:

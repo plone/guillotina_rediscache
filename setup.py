@@ -32,7 +32,8 @@ setup(
     install_requires=[
         'guillotina',
         'aioredis',
-        'lru-dict'
+        'lru-dict',
+        'ujson'
     ],
     extras_require={
         'test': [

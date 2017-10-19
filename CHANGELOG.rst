@@ -1,7 +1,8 @@
 1.0.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Use ujson
+  [vangheem]
 
 
 1.0.5 (2017-10-02)
