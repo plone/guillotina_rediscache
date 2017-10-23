@@ -1,7 +1,8 @@
-import threading
-from lru import LRU
 from guillotina import app_settings
+from lru import LRU
+
 import aioredis
+import threading
 
 
 # guillotina is single threaded, we just want a global that is mutable

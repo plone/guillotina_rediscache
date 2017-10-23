@@ -31,7 +31,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'guillotina',
-        'aioredis',
+        'aioredis>=1.0.0b2',
         'lru-dict',
         'ujson'
     ],
@@ -42,7 +42,6 @@ setup(
             'backoff',
             'psycopg2',
             'pytest-asyncio<=0.5.0',
-            'pytest_asyncio<=0.5.0',
             'pytest-aiohttp'
         ]
     }
