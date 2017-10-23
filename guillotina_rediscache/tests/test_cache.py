@@ -5,6 +5,7 @@ from guillotina.tests.utils import create_content
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
 from guillotina_rediscache.cache_strategy import RedisCache
+from guillotina_rediscache.interfaces import CACHE_PREFIX
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import asyncio
@@ -19,7 +20,7 @@ async def test_cache_set(redis, dummy_guillotina, loop):
 
     await rcache.set('bar', oid='foo')
     # make sure it is in redis
-    assert serialize.loads(await rcache._conn.get('foo')) == "bar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + 'foo')) == "bar"
     # but also in memory
     assert rcache._memory_cache.get('foo') == 'bar'
     # and api matches..
@@ -37,7 +38,7 @@ async def test_cache_delete(redis, dummy_guillotina, loop):
 
     await rcache.set('bar', oid='foo')
     # make sure it is in redis
-    assert serialize.loads(await rcache._conn.get('foo')) == "bar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + 'foo')) == "bar"
     assert rcache._memory_cache.get('foo') == 'bar'
     assert await rcache.get(oid='foo') == 'bar'
 
@@ -57,7 +58,7 @@ async def test_cache_clear(redis, dummy_guillotina, loop):
 
     await rcache.set('bar', oid='foo')
     # make sure it is in redis
-    assert serialize.loads(await rcache._conn.get('foo')) == "bar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + 'foo')) == "bar"
     assert rcache._memory_cache.get('foo') == 'bar'
     assert await rcache.get(oid='foo') == 'bar'
 
@@ -77,7 +78,7 @@ async def test_invalidate_object(redis, dummy_guillotina, loop):
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
-    assert serialize.loads(await rcache._conn.get(content._p_oid)) == "foobar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + content._p_oid)) == "foobar"
     assert rcache._memory_cache.get(content._p_oid) == 'foobar'
     assert await rcache.get(oid=content._p_oid) == 'foobar'
 
@@ -97,7 +98,7 @@ async def test_subscriber_invalidates(redis, dummy_guillotina, loop):
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
-    assert serialize.loads(await rcache._conn.get(content._p_oid)) == "foobar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + content._p_oid)) == "foobar"
     assert rcache._memory_cache.get(content._p_oid) == 'foobar'
     assert await rcache.get(oid=content._p_oid) == 'foobar'
 
@@ -123,7 +124,7 @@ async def test_subscriber_ignores_trsn_on_invalidate(redis, dummy_guillotina, lo
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
-    assert serialize.loads(await rcache._conn.get(content._p_oid)) == "foobar"
+    assert serialize.loads(await rcache._conn.get(CACHE_PREFIX + content._p_oid)) == "foobar"
     assert rcache._memory_cache.get(content._p_oid) == 'foobar'
     assert await rcache.get(oid=content._p_oid) == 'foobar'
 

@@ -1,3 +1,4 @@
+import asyncpg
 import pickle
 
 
@@ -8,6 +9,8 @@ def dumps(value):
     :param value: dict
     :returns: str
     """
+    if isinstance(value, asyncpg.Record):
+        value = dict(value)
     return pickle.dumps(value)
 
 
