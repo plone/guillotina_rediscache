@@ -27,6 +27,7 @@ class RedisCache(BaseCache):
         self._loop = loop
 
         self._conn = None
+        self._redis = None
         self._memory_cache = cache.get_memory_cache()
         self._settings = app_settings.get('redis', {})
 
@@ -34,8 +35,13 @@ class RedisCache(BaseCache):
 
     async def get_conn(self):
         if self._conn is None:
-            self._conn = aioredis.Redis(await (await cache.get_redis_pool(self._loop)).acquire())
+            self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
         return self._conn
+
+    async def get_redis(self):
+        if self._redis is None:
+            self._redis = aioredis.Redis(await self.get_conn())
+        return self._redis
 
     async def get(self, **kwargs):
         key = self.get_key(**kwargs)
@@ -43,7 +49,7 @@ class RedisCache(BaseCache):
             if key in self._memory_cache:
                 logger.info('Retrieved {} from memory cache'.format(key))
                 return self._memory_cache[key]
-            conn = await self.get_conn()
+            conn = await self.get_redis()
             val = await conn.get(CACHE_PREFIX + key)
             if val is not None:
                 logger.info('Retrieved {} from redis cache'.format(key))
@@ -56,7 +62,7 @@ class RedisCache(BaseCache):
     async def set(self, value, **kwargs):
         key = self.get_key(**kwargs)
         try:
-            conn = await self.get_conn()
+            conn = await self.get_redis()
             self._memory_cache[key] = value
             await conn.set(CACHE_PREFIX + key, serialize.dumps(value),
                            expire=self._settings.get('ttl', 3600))
@@ -67,7 +73,7 @@ class RedisCache(BaseCache):
     async def clear(self):
         try:
             self._memory_cache.clear()
-            conn = await self.get_conn()
+            conn = await self.get_redis()
             await conn.flushall()
             logger.info('Cleared cache')
         except Exception:
@@ -76,7 +82,7 @@ class RedisCache(BaseCache):
     async def delete(self, key):
         self._keys_to_invalidate.append(key)
         try:
-            conn = await self.get_conn()
+            conn = await self.get_redis()
             if key in self._memory_cache:
                 del self._memory_cache[key]
             await conn.delete(CACHE_PREFIX + key)
@@ -104,8 +110,7 @@ class RedisCache(BaseCache):
                 if not invalidate:
                     # skip out, nothing to do
                     return
-                self._conn = aioredis.Redis(
-                    await (await cache.get_redis_pool(self._loop)).acquire())
+                self.get_redis()  # force getting connnection object
 
             if invalidate:
                 await self._invalidate_keys(self._transaction.modified, 'modified')
@@ -124,8 +129,7 @@ class RedisCache(BaseCache):
         if len(self._keys_to_invalidate) > 0:
             channel_utility = getUtility(IRedisChannelUtility)
             channel_utility.ignore_tid(self._transaction._tid)
-
-            await self._conn.publish_json(self._settings['updates_channel'], {
+            await self._redis.publish_json(self._settings['updates_channel'], {
                 'tid': self._transaction._tid,
                 'keys': self._keys_to_invalidate
             })
@@ -136,7 +140,7 @@ class RedisCache(BaseCache):
         try:
             self._keys_to_invalidate = []
             pool = await cache.get_redis_pool(self._loop)
-            if self._conn in pool._used:
+            if self._conn is not None and self._conn in pool._used:
                 pool.release(self._conn)
         except Exception:
             logger.warning('Error closing cache connection', exc_info=True)

@@ -1,7 +1,8 @@
 1.0.9 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix handling connection objects and releasing back to pool
+  [vangheem]
 
 
 1.0.8 (2017-10-23)
