@@ -1,7 +1,8 @@
 1.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Use pickle instead of json from load/dumps because it is much faster
+  [vangheem]
 
 
 1.0.6 (2017-10-19)

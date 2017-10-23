@@ -1,6 +1,4 @@
-import asyncpg
-import base64
-import ujson
+import pickle
 
 
 def dumps(value):
@@ -10,11 +8,7 @@ def dumps(value):
     :param value: dict
     :returns: str
     """
-    if isinstance(value, asyncpg.Record):
-        value = dict(value)
-    if isinstance(value, dict):
-        value['state'] = base64.b64encode(value['state']).decode('ascii')
-    return ujson.dumps(value)
+    return pickle.dumps(value)
 
 
 def loads(value):
@@ -26,8 +20,4 @@ def loads(value):
     """
     if value is None:
         return None
-    value = ujson.loads(value)
-    if isinstance(value, dict):
-        if 'state' in value:
-            value['state'] = base64.b64decode(value['state'].encode('ascii'))
-    return value
+    return pickle.loads(value)

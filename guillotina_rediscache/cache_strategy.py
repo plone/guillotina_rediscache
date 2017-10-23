@@ -9,7 +9,7 @@ from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
-import asyncio
+import aioredis
 import logging
 
 
@@ -33,7 +33,8 @@ class RedisCache(BaseCache):
 
     async def get_conn(self):
         if self._conn is None:
-            self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
+            self._conn = aioredis.Redis(
+                await (await cache.get_redis_pool(self._loop)).acquire())
         return self._conn
 
     async def get(self, **kwargs):
@@ -103,15 +104,15 @@ class RedisCache(BaseCache):
                 if not invalidate:
                     # skip out, nothing to do
                     return
-                self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
+                self._conn = aioredis.Redis(
+                    await (await cache.get_redis_pool(self._loop)).acquire())
 
             if invalidate:
                 await self._invalidate_keys(self._transaction.modified, 'modified')
                 await self._invalidate_keys(self._transaction.added, 'added')
                 await self._invalidate_keys(self._transaction.deleted, 'deleted')
 
-            # we can do this in a task and carry on with the request
-            await asyncio.ensure_future(self._synchronize_and_close())
+            await self._synchronize_and_close()
 
         except Exception:
             logger.warning('Error closing connection', exc_info=True)

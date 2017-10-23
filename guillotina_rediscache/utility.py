@@ -3,6 +3,7 @@ from guillotina import configure
 from guillotina_rediscache import cache
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
+import aioredis
 import asyncio
 import logging
 import ujson
@@ -26,7 +27,7 @@ class RedisChannelUtility:
         while True:
             try:
                 self._pool = await cache.get_redis_pool(self._loop)
-                self._conn = await self._pool.acquire()
+                self._conn = aioredis.Redis(await self._pool.acquire())
                 res = await self._conn.subscribe(settings['updates_channel'])
                 ch = res[0]
                 while (await ch.wait_message()):
@@ -85,7 +86,7 @@ class RedisUtility:
     async def get_conn(self):
         if self._conn is None:
             pool = await self.get_pool()
-            self._conn = await pool.acquire()
+            self._conn = aioredis.Redis(await pool.acquire())
         return self._conn
 
     async def initialize(self, app=None):

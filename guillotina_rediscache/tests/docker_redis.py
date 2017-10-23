@@ -1,5 +1,5 @@
-from time import sleep
 from guillotina.tests.docker_containers.base import BaseImage
+from time import sleep
 
 
 class Redis(BaseImage):
