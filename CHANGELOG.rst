@@ -1,4 +1,4 @@
-1.0.7 (unreleased)
+1.0.7 (2017-10-23)
 ------------------
 
 - Use pickle instead of json from load/dumps because it is much faster
