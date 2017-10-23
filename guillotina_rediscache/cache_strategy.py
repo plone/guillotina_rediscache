@@ -7,6 +7,7 @@ from guillotina.db.interfaces import IStorageCache
 from guillotina.db.interfaces import ITransaction
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
+from guillotina_rediscache.interfaces import CACHE_PREFIX
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import aioredis
@@ -44,7 +45,7 @@ class RedisCache(BaseCache):
                 logger.info('Retrieved {} from memory cache'.format(key))
                 return self._memory_cache[key]
             conn = await self.get_conn()
-            val = await conn.get(key)
+            val = await conn.get(CACHE_PREFIX + key)
             if val is not None:
                 logger.info('Retrieved {} from redis cache'.format(key))
                 val = serialize.loads(val)
@@ -58,7 +59,7 @@ class RedisCache(BaseCache):
         try:
             conn = await self.get_conn()
             self._memory_cache[key] = value
-            await conn.set(key, serialize.dumps(value),
+            await conn.set(CACHE_PREFIX + key, serialize.dumps(value),
                            expire=self._settings.get('ttl', 3600))
             logger.info('set {} in cache'.format(key))
         except Exception:
@@ -79,7 +80,7 @@ class RedisCache(BaseCache):
             conn = await self.get_conn()
             if key in self._memory_cache:
                 del self._memory_cache[key]
-            await conn.delete(key)
+            await conn.delete(CACHE_PREFIX + key)
             logger.info('Deleted cache key {}'.format(key))
         except:
             logger.warning('Error deleting cache key {}'.format(key), exc_info=True)
