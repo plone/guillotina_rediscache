@@ -1,8 +1,8 @@
 1.0.8 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Fix use of pool
+  [vangheem]
 
 1.0.7 (2017-10-23)
 ------------------

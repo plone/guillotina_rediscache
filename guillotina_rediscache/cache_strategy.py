@@ -10,6 +10,7 @@ from guillotina_rediscache import serialize
 from guillotina_rediscache.interfaces import CACHE_PREFIX
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
+import aioredis
 import logging
 
 
@@ -33,7 +34,7 @@ class RedisCache(BaseCache):
 
     async def get_conn(self):
         if self._conn is None:
-            self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
+            self._conn = aioredis.Redis(await (await cache.get_redis_pool(self._loop)).acquire())
         return self._conn
 
     async def get(self, **kwargs):
@@ -103,7 +104,8 @@ class RedisCache(BaseCache):
                 if not invalidate:
                     # skip out, nothing to do
                     return
-                self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
+                self._conn = aioredis.Redis(
+                    await (await cache.get_redis_pool(self._loop)).acquire())
 
             if invalidate:
                 await self._invalidate_keys(self._transaction.modified, 'modified')
