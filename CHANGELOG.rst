@@ -1,5 +1,5 @@
-1.1.0 (unreleased)
-------------------
+1.0.10 (2017-11-06)
+-------------------
 
 - upgrade for guillotina 2.0.0
   [vangheem]
