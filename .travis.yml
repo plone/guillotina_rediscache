@@ -8,9 +8,9 @@ cache:
   directories:
     - eggs
 install:
-  - bin/pip install -e .[test]
+  - pip install -e .[test]
 script:
-  - bin/pytest -s --cov=guillotina_rediscache -v --cov-report term-missing guillotina_rediscache
+  - pytest -s --cov=guillotina_rediscache -v --cov-report term-missing guillotina_rediscache
 after_success:
   - pip install coveralls
   - coveralls

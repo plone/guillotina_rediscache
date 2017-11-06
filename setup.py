@@ -42,7 +42,8 @@ setup(
             'backoff',
             'psycopg2',
             'pytest-asyncio<=0.5.0',
-            'pytest-aiohttp'
+            'pytest-aiohttp',
+            'pytest-cov'
         ]
     }
 )
