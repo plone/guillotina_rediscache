@@ -30,7 +30,7 @@ setup(
     # ext_modules=ext_modules,
     packages=find_packages(),
     install_requires=[
-        'guillotina',
+        'guillotina>=2.0.0',
         'aioredis>=1.0.0b2',
         'lru-dict',
         'ujson'

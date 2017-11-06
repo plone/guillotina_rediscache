@@ -2,7 +2,6 @@ from guillotina import app_settings
 from guillotina import configure
 from guillotina.component import getUtility
 from guillotina.db.cache.base import BaseCache
-from guillotina.db.interfaces import IStorage
 from guillotina.db.interfaces import IStorageCache
 from guillotina.db.interfaces import ITransaction
 from guillotina_rediscache import cache
@@ -17,13 +16,12 @@ import logging
 logger = logging.getLogger('guillotina_rediscache')
 
 
-@configure.adapter(for_=(IStorage, ITransaction), provides=IStorageCache,
+@configure.adapter(for_=ITransaction, provides=IStorageCache,
                    name="redis")
 class RedisCache(BaseCache):
 
-    def __init__(self, storage, transaction, loop=None):
-        self._storage = storage
-        self._transaction = transaction
+    def __init__(self, transaction, loop=None):
+        super().__init__(transaction)
         self._loop = loop
 
         self._conn = None

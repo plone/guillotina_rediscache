@@ -15,7 +15,7 @@ async def test_cache_set(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
     trns = mocks.MockTransaction(mocks.MockTransactionManager())
     trns.added = trns.deleted = {}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -33,7 +33,7 @@ async def test_cache_delete(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
     trns = mocks.MockTransaction(mocks.MockTransactionManager())
     trns.added = trns.deleted = {}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -53,7 +53,7 @@ async def test_cache_clear(redis, dummy_guillotina, loop):
     await cache.close_redis_pool()
     trns = mocks.MockTransaction(mocks.MockTransactionManager())
     trns.added = trns.deleted = {}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('bar', oid='foo')
@@ -74,7 +74,7 @@ async def test_invalidate_object(redis, dummy_guillotina, loop):
     trns.added = trns.deleted = {}
     content = create_content()
     trns.modified = {content._p_oid: content}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
@@ -94,7 +94,7 @@ async def test_subscriber_invalidates(redis, dummy_guillotina, loop):
     trns.added = trns.deleted = {}
     content = create_content()
     trns.modified = {content._p_oid: content}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
@@ -120,7 +120,7 @@ async def test_subscriber_ignores_trsn_on_invalidate(redis, dummy_guillotina, lo
     trns.added = trns.deleted = {}
     content = create_content()
     trns.modified = {content._p_oid: content}
-    rcache = RedisCache(mocks.MockStorage(), trns, loop=loop)
+    rcache = RedisCache(trns, loop=loop)
     await rcache.clear()
 
     await rcache.set('foobar', oid=content._p_oid)
