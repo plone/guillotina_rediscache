@@ -35,6 +35,9 @@ class RedisChannelUtility:
                 while (await ch.wait_message()):
                     msg = ujson.loads(await ch.get(encoding='utf-8'))
                     await self.invalidate(msg)
+            except asyncio.CancelledError:
+                # task cancelled, let it die
+                pass
             except Exception:
                 try:
                     self._pool.release(self._conn)

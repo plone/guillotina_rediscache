@@ -1,7 +1,8 @@
 1.0.11 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Handle CancelledError
+  [vangheem]
 
 
 1.0.10 (2017-11-06)
