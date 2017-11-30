@@ -12,6 +12,17 @@ def settings_configurator(settings):
         settings['applications'] = ['guillotina_rediscache']
     del settings['static']
     del settings['jsapps']
+    settings["redis"] = {
+        'host': getattr(redis, 'host', 'localhost'),
+        'port': getattr(redis, 'port', 6379),
+        'ttl': 3600,
+        'memory_cache_size': 1000,
+        'updates_channel': 'guillotina',
+        'pool': {
+            'minsize': 5,
+            'maxsize': 100
+        }
+    }
 
 
 testing.configure_with(settings_configurator)
@@ -22,8 +33,11 @@ def redis():
     """
     detect travis, use travis's postgres; otherwise, use docker
     """
-    host = redis_image.run()
+    host, port = redis_image.run()
 
-    yield host  # provide the fixture value
+    setattr(redis, 'host', host)
+    setattr(redis, 'port', port)
+
+    yield host, port  # provide the fixture value
 
     redis_image.stop()
