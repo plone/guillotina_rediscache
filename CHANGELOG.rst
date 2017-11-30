@@ -1,4 +1,4 @@
-1.0.12 (unreleased)
+1.0.12 (2017-11-30)
 -------------------
 
 - Missing await statement for `self.get_redis()`
