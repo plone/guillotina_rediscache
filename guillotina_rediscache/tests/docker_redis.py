@@ -5,14 +5,17 @@ from time import sleep
 class Redis(BaseImage):
     label = 'redis'
     image = 'redis:3.2.8'
-    to_port = from_port = 6379
-    image_options = BaseImage.image_options.copy()
-    image_options.update(dict(
-        cap_add=['IPC_LOCK'],
-        mem_limit='200m'
-    ))
+    port = 6379
 
-    def check(self, host):
+    def get_image_options(self):
+        image_options = super().get_image_options()
+        image_options.update(dict(
+            cap_add=['IPC_LOCK'],
+            mem_limit='200m'
+        ))
+        return image_options
+
+    def check(self):
         sleep(1)
         return True
 
