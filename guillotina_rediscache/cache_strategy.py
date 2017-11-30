@@ -108,7 +108,7 @@ class RedisCache(BaseCache):
                 if not invalidate:
                     # skip out, nothing to do
                     return
-                self.get_redis()  # force getting connnection object
+                await self.get_redis()  # force getting connnection object
 
             if invalidate:
                 await self._invalidate_keys(self._transaction.modified, 'modified')

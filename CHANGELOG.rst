@@ -1,7 +1,8 @@
 1.0.12 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Missing await statement for `self.get_redis()`
+  [vangheem]
 
 
 1.0.11 (2017-11-08)
