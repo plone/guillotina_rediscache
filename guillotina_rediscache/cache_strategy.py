@@ -4,12 +4,14 @@ from guillotina.component import getUtility
 from guillotina.db.cache.base import BaseCache
 from guillotina.db.interfaces import IStorageCache
 from guillotina.db.interfaces import ITransaction
+from guillotina.profile import profilable
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
 from guillotina_rediscache.interfaces import CACHE_PREFIX
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import aioredis
+import asyncio
 import logging
 
 
@@ -33,7 +35,7 @@ class RedisCache(BaseCache):
 
     async def get_conn(self):
         if self._conn is None:
-            self._conn = await (await cache.get_redis_pool(self._loop)).acquire()
+            self._conn = await cache.get_redis_pool(self._loop)
         return self._conn
 
     async def get_redis(self):
@@ -41,6 +43,7 @@ class RedisCache(BaseCache):
             self._redis = aioredis.Redis(await self.get_conn())
         return self._redis
 
+    @profilable
     async def get(self, **kwargs):
         key = self.get_key(**kwargs)
         try:
@@ -57,6 +60,7 @@ class RedisCache(BaseCache):
         except Exception:
             logger.warning('Error getting cache value', exc_info=True)
 
+    @profilable
     async def set(self, value, **kwargs):
         key = self.get_key(**kwargs)
         try:
@@ -68,6 +72,7 @@ class RedisCache(BaseCache):
         except Exception:
             logger.warning('Error setting cache value', exc_info=True)
 
+    @profilable
     async def clear(self):
         try:
             self._memory_cache.clear()
@@ -77,6 +82,7 @@ class RedisCache(BaseCache):
         except Exception:
             logger.warning('Error clearing cache', exc_info=True)
 
+    @profilable
     async def delete(self, key):
         self._keys_to_invalidate.append(key)
         try:
@@ -88,10 +94,12 @@ class RedisCache(BaseCache):
         except:
             logger.warning('Error deleting cache key {}'.format(key), exc_info=True)
 
+    @profilable
     async def delete_all(self, keys):
         for key in keys:
             await self.delete(key)
 
+    @profilable
     async def _invalidate_keys(self, data, type_):
         invalidated = []
         for oid, ob in data.items():
@@ -102,6 +110,7 @@ class RedisCache(BaseCache):
                     del self._memory_cache[key]
         return invalidated
 
+    @profilable
     async def close(self, invalidate=True):
         try:
             if self._conn is None:
@@ -115,11 +124,11 @@ class RedisCache(BaseCache):
                 await self._invalidate_keys(self._transaction.added, 'added')
                 await self._invalidate_keys(self._transaction.deleted, 'deleted')
 
-            await self._synchronize_and_close()
-
+            asyncio.ensure_future(self._synchronize_and_close())
         except Exception:
             logger.warning('Error closing connection', exc_info=True)
 
+    @profilable
     async def _synchronize_and_close(self):
         '''
         publish cache changes on redis
@@ -132,13 +141,4 @@ class RedisCache(BaseCache):
                 'keys': self._keys_to_invalidate
             })
 
-        await self._close()
-
-    async def _close(self, keys=[]):
-        try:
-            self._keys_to_invalidate = []
-            pool = await cache.get_redis_pool(self._loop)
-            if self._conn is not None and self._conn in pool._used:
-                pool.release(self._conn)
-        except Exception:
-            logger.warning('Error closing cache connection', exc_info=True)
+        self._keys_to_invalidate = []

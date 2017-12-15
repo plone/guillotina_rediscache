@@ -37,3 +37,17 @@ app_settings for this::
           }
       }
     }
+
+
+
+Run measures
+------------
+
+Using guillotina run command::
+
+    ./bin/g run --script=measures/serialize.py -c measures/config.yaml
+
+
+With profiling::
+
+    ./bin/g run --script=measures/serialize.py -c measures/config.yaml --line-profiler --line-profiler-matcher="*serialize*"
