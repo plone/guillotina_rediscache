@@ -1,7 +1,7 @@
-
 from guillotina import testing
 from guillotina_rediscache.tests.docker_redis import redis_image
 
+import os
 import pytest
 
 
@@ -33,11 +33,16 @@ def redis():
     """
     detect travis, use travis's postgres; otherwise, use docker
     """
-    host, port = redis_image.run()
+    if 'TRAVIS' in os.environ:
+        host = 'localhost'
+        port = 6379
+    else:
+        host, port = redis_image.run()
 
     setattr(redis, 'host', host)
     setattr(redis, 'port', port)
 
     yield host, port  # provide the fixture value
 
-    redis_image.stop()
+    if 'TRAVIS' not in os.environ:
+        redis_image.stop()

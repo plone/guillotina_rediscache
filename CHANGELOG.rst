@@ -1,7 +1,11 @@
 1.0.13 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Improve request performance
+  [vangheem]
+
+- Change the way we're using the redis pool so it reuses connections
+  [vangheem]
 
 
 1.0.12 (2017-11-30)

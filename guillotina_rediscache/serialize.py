@@ -1,7 +1,10 @@
+from guillotina.profile import profilable
+
 import asyncpg
 import pickle
 
 
+@profilable
 def dumps(value):
     """
     Serialize the received value using ``json.dumps``.
@@ -14,6 +17,7 @@ def dumps(value):
     return pickle.dumps(value)
 
 
+@profilable
 def loads(value):
     """
     Deserialize value using ``ujson.loads``.

@@ -26,3 +26,4 @@ def includeme(root, settings):
     configure.scan('guillotina_rediscache.cache_strategy')
     configure.scan('guillotina_rediscache.utility')
     configure.scan('guillotina_rediscache.api')
+    configure.scan('guillotina_rediscache.serialize')

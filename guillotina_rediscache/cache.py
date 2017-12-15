@@ -2,36 +2,36 @@ from guillotina import app_settings
 from lru import LRU
 
 import aioredis
-import threading
 
 
-# guillotina is single threaded, we just want a global that is mutable
-# to storage the redis connection pool
-_local = threading.local()
+_redis_pool = None
+_lru = None
 
 
 async def close_redis_pool():
-    if hasattr(_local, 'redis_pool'):
-        pool = _local.redis_pool
+    global _redis_pool
+    if _redis_pool is not None:
         try:
-            await pool.clear()
+            await _redis_pool.clear()
         except RuntimeError:
             pass
-        del _local.redis_pool
+        _redis_pool = None
 
 
 async def get_redis_pool(loop=None):
-    if not hasattr(_local, 'redis_pool'):
+    global _redis_pool
+    if _redis_pool is None:
         settings = app_settings['redis']
-        _local.redis_pool = await aioredis.create_pool(
+        _redis_pool = await aioredis.create_pool(
             (settings['host'], settings['port']),
             **settings['pool'],
             loop=loop)
-    return _local.redis_pool
+    return _redis_pool
 
 
 def get_memory_cache():
-    if not hasattr(_local, 'lru'):
+    global _lru
+    if _lru is None:
         settings = app_settings['redis']
-        _local.lru = LRU(settings['memory_cache_size'])
-    return _local.lru
+        _lru = LRU(settings['memory_cache_size'])
+    return _lru
