@@ -1,4 +1,4 @@
-1.0.13 (unreleased)
+1.0.13 (2017-12-15)
 -------------------
 
 - Improve request performance
