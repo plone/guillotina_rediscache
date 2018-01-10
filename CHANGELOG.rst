@@ -1,4 +1,4 @@
-1.0.14 (unreleased)
+1.0.14 (2018-01-10)
 -------------------
 
 - Only run invalidation task if we have keys to invalidate
