@@ -124,7 +124,8 @@ class RedisCache(BaseCache):
                 await self._invalidate_keys(self._transaction.added, 'added')
                 await self._invalidate_keys(self._transaction.deleted, 'deleted')
 
-            asyncio.ensure_future(self._synchronize_and_close())
+            if len(self._keys_to_invalidate) > 0:
+                asyncio.ensure_future(self._synchronize_and_close())
         except Exception:
             logger.warning('Error closing connection', exc_info=True)
 
@@ -133,12 +134,11 @@ class RedisCache(BaseCache):
         '''
         publish cache changes on redis
         '''
-        if len(self._keys_to_invalidate) > 0:
-            channel_utility = getUtility(IRedisChannelUtility)
-            channel_utility.ignore_tid(self._transaction._tid)
-            await self._redis.publish_json(self._settings['updates_channel'], {
-                'tid': self._transaction._tid,
-                'keys': self._keys_to_invalidate
-            })
+        channel_utility = getUtility(IRedisChannelUtility)
+        channel_utility.ignore_tid(self._transaction._tid)
+        await self._redis.publish_json(self._settings['updates_channel'], {
+            'tid': self._transaction._tid,
+            'keys': self._keys_to_invalidate
+        })
 
         self._keys_to_invalidate = []

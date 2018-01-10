@@ -1,7 +1,8 @@
 1.0.14 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Only run invalidation task if we have keys to invalidate
+  [vangheem]
 
 
 1.0.13 (2017-12-15)

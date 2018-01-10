@@ -31,7 +31,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'guillotina>=2.0.0',
-        'aioredis>=1.0.0b2',
+        'aioredis>=1.0.0',
         'lru-dict',
         'ujson'
     ],
