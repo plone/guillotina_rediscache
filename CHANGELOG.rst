@@ -1,4 +1,4 @@
-1.1.0 (unreleased)
+1.1.0 (2018-01-12)
 ------------------
 
 - Push cache updates to redis subscriber. This should improve cache hits dramatically
