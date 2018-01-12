@@ -21,6 +21,7 @@ logger = logging.getLogger('guillotina_rediscache')
 @configure.adapter(for_=ITransaction, provides=IStorageCache,
                    name="redis")
 class RedisCache(BaseCache):
+    max_publish_objects = 20
 
     def __init__(self, transaction, loop=None):
         super().__init__(transaction)
@@ -32,6 +33,8 @@ class RedisCache(BaseCache):
         self._settings = app_settings.get('redis', {})
 
         self._keys_to_invalidate = []
+
+        self._stored_objects = []
 
     async def get_conn(self):
         if self._conn is None:
@@ -99,6 +102,13 @@ class RedisCache(BaseCache):
         for key in keys:
             await self.delete(key)
 
+    async def store_object(self, obj, pickled):
+        if len(self._stored_objects) < self.max_publish_objects:
+            self._stored_objects.append((obj, pickled))
+            # also assume these objects are then stored
+            # (even though it's done after the request)
+            self._stored += 1
+
     @profilable
     async def _invalidate_keys(self, data, type_):
         invalidated = []
@@ -134,11 +144,32 @@ class RedisCache(BaseCache):
         '''
         publish cache changes on redis
         '''
+        push = {}
+        for obj, pickled in self._stored_objects:
+            val = {
+                'state': pickled,
+                'zoid': obj._p_oid,
+                'tid': obj._p_serial,
+                'id': obj.__name__
+            }
+            if obj.__of__:
+                ob_key = self.get_key(oid=obj.__of__, id=obj.__name__, variant='annotation')
+                await self.set(val, oid=obj.__of__, id=obj.__name__, variant='annotation')
+            else:
+                ob_key = self.get_key(container=obj.__parent__, id=obj.__name__)
+                await self.set(val, container=obj.__parent__, id=obj.__name__)
+
+            if ob_key in self._keys_to_invalidate:
+                self._keys_to_invalidate.remove(ob_key)
+            push[ob_key] = val
+
         channel_utility = getUtility(IRedisChannelUtility)
         channel_utility.ignore_tid(self._transaction._tid)
-        await self._redis.publish_json(self._settings['updates_channel'], {
+        await self._redis.publish(self._settings['updates_channel'], serialize.dumps({
             'tid': self._transaction._tid,
-            'keys': self._keys_to_invalidate
-        })
+            'keys': self._keys_to_invalidate,
+            'push': push
+        }))
 
         self._keys_to_invalidate = []
+        self._stored_objects = []

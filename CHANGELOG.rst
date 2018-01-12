@@ -1,7 +1,8 @@
-1.0.15 (unreleased)
--------------------
+1.1.0 (unreleased)
+------------------
 
-- Nothing changed yet.
+- Push cache updates to redis subscriber. This should improve cache hits dramatically
+  [vangheem]
 
 
 1.0.14 (2018-01-10)

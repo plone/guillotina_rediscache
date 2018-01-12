@@ -104,10 +104,10 @@ async def test_subscriber_invalidates(redis, dummy_guillotina, loop):
 
     assert content._p_oid in rcache._memory_cache
 
-    await rcache._redis.publish_json(app_settings['redis']['updates_channel'], {
+    await rcache._redis.publish(app_settings['redis']['updates_channel'], serialize.dumps({
         'tid': 32423,
         'keys': [content._p_oid]
-    })
+    }))
     await asyncio.sleep(1)  # should be enough for pub/sub to finish
     assert content._p_oid not in rcache._memory_cache
 
@@ -133,10 +133,10 @@ async def test_subscriber_ignores_trsn_on_invalidate(redis, dummy_guillotina, lo
     utility = getUtility(IRedisChannelUtility)
     utility.ignore_tid(5555)
 
-    await rcache._redis.publish_json(app_settings['redis']['updates_channel'], {
+    await rcache._redis.publish(app_settings['redis']['updates_channel'], serialize.dumps({
         'tid': 5555,
         'keys': [content._p_oid]
-    })
+    }))
     await asyncio.sleep(1)  # should be enough for pub/sub to finish
     # should still be there because we set to ignore this tid
     assert content._p_oid in rcache._memory_cache

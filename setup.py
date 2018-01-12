@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='guillotina_rediscache',
-    version='1.0.15.dev0',
+    version='1.1.0.dev0',
     description='guillotina cache implementation using redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
                       open('CHANGELOG.rst').read()),
@@ -30,7 +30,7 @@ setup(
     # ext_modules=ext_modules,
     packages=find_packages(),
     install_requires=[
-        'guillotina>=2.0.0',
+        'guillotina>=2.3.10',
         'aioredis>=1.0.0',
         'lru-dict',
         'ujson'

@@ -2,12 +2,13 @@ from guillotina import app_settings
 from guillotina import configure
 from guillotina.profile import profilable
 from guillotina_rediscache import cache
+from guillotina_rediscache import serialize
 from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import aioredis
 import asyncio
 import logging
-import ujson
+import pickle
 
 
 logger = logging.getLogger('guillotina_rediscache')
@@ -33,8 +34,11 @@ class RedisChannelUtility:
                 res = await self._redis.subscribe(settings['updates_channel'])
                 ch = res[0]
                 while (await ch.wait_message()):
-                    msg = ujson.loads(await ch.get(encoding='utf-8'))
-                    await self.invalidate(msg)
+                    try:
+                        msg = serialize.loads(await ch.get())
+                        await self.invalidate(msg)
+                    except (TypeError, pickle.UnpicklingError):
+                        pass
             except asyncio.CancelledError:
                 # task cancelled, let it die
                 pass
@@ -59,10 +63,14 @@ class RedisChannelUtility:
             # on the same thread, ignore this sucker...
             self._ignored_tids.remove(data['tid'])
             return
+
         mem_cache = cache.get_memory_cache()
         for key in data['keys']:
             if key in mem_cache:
                 del mem_cache[key]
+
+        for cache_key, ob in data.get('push', {}).items():
+            mem_cache[cache_key] = ob
 
     def ignore_tid(self, tid):
         # so we don't invalidate twice...
