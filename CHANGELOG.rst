@@ -1,7 +1,8 @@
 1.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- batch all cache deletes into one request
+  [vangheem]
 
 
 1.1.0 (2018-01-12)

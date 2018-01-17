@@ -32,7 +32,7 @@ class RedisCache(BaseCache):
         self._memory_cache = cache.get_memory_cache()
         self._settings = app_settings.get('redis', {})
 
-        self._keys_to_invalidate = []
+        self._keys_to_publish = []
 
         self._stored_objects = []
 
@@ -87,20 +87,22 @@ class RedisCache(BaseCache):
 
     @profilable
     async def delete(self, key):
-        self._keys_to_invalidate.append(key)
-        try:
-            conn = await self.get_redis()
-            if key in self._memory_cache:
-                del self._memory_cache[key]
-            await conn.delete(CACHE_PREFIX + key)
-            logger.info('Deleted cache key {}'.format(key))
-        except:
-            logger.warning('Error deleting cache key {}'.format(key), exc_info=True)
+        await self.delete_all([key])
 
     @profilable
     async def delete_all(self, keys):
+        delete_keys = []
         for key in keys:
-            await self.delete(key)
+            self._keys_to_publish.append(key)
+            delete_keys.append(CACHE_PREFIX + key)
+            if key in self._memory_cache:
+                del self._memory_cache[key]
+        try:
+            conn = await self.get_redis()
+            await conn.delete(*delete_keys)
+            logger.info('Deleted cache keys {}'.format(delete_keys))
+        except:
+            logger.warning('Error deleting cache keys {}'.format(delete_keys), exc_info=True)
 
     async def store_object(self, obj, pickled):
         if len(self._stored_objects) < self.max_publish_objects:
@@ -110,14 +112,12 @@ class RedisCache(BaseCache):
             self._stored += 1
 
     @profilable
-    async def _invalidate_keys(self, data, type_):
+    async def _invalidate_keys(self, groups):
         invalidated = []
-        for oid, ob in data.items():
-            for key in self.get_cache_keys(ob, type_):
-                invalidated.append(key)
-                await self.delete(key)
-                if key in self._memory_cache:
-                    del self._memory_cache[key]
+        for data, type_ in groups:
+            for oid, ob in data.items():
+                invalidated.extend(self.get_cache_keys(ob, type_))
+        await self.delete_all(invalidated)
         return invalidated
 
     @profilable
@@ -130,17 +130,19 @@ class RedisCache(BaseCache):
                 await self.get_redis()  # force getting connnection object
 
             if invalidate:
-                await self._invalidate_keys(self._transaction.modified, 'modified')
-                await self._invalidate_keys(self._transaction.added, 'added')
-                await self._invalidate_keys(self._transaction.deleted, 'deleted')
+                await self._invalidate_keys([
+                    (self._transaction.modified, 'modified'),
+                    (self._transaction.added, 'added'),
+                    (self._transaction.deleted, 'deleted')
+                ])
 
-            if len(self._keys_to_invalidate) > 0:
-                asyncio.ensure_future(self._synchronize_and_close())
+            if len(self._keys_to_publish) > 0:
+                asyncio.ensure_future(self._synchronize())
         except Exception:
             logger.warning('Error closing connection', exc_info=True)
 
     @profilable
-    async def _synchronize_and_close(self):
+    async def _synchronize(self):
         '''
         publish cache changes on redis
         '''
@@ -159,17 +161,17 @@ class RedisCache(BaseCache):
                 ob_key = self.get_key(container=obj.__parent__, id=obj.__name__)
                 await self.set(val, container=obj.__parent__, id=obj.__name__)
 
-            if ob_key in self._keys_to_invalidate:
-                self._keys_to_invalidate.remove(ob_key)
+            if ob_key in self._keys_to_publish:
+                self._keys_to_publish.remove(ob_key)
             push[ob_key] = val
 
         channel_utility = getUtility(IRedisChannelUtility)
         channel_utility.ignore_tid(self._transaction._tid)
         await self._redis.publish(self._settings['updates_channel'], serialize.dumps({
             'tid': self._transaction._tid,
-            'keys': self._keys_to_invalidate,
+            'keys': self._keys_to_publish,
             'push': push
         }))
 
-        self._keys_to_invalidate = []
+        self._keys_to_publish = []
         self._stored_objects = []
