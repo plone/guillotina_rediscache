@@ -1,4 +1,4 @@
-1.1.1 (unreleased)
+1.1.1 (2018-01-17)
 ------------------
 
 - batch all cache deletes into one request
