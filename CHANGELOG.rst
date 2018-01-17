@@ -1,4 +1,4 @@
-1.1.2 (unreleased)
+1.1.2 (2018-01-17)
 ------------------
 
 - Fix using redis.delete when keys are of length 0
