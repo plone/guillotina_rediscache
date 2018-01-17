@@ -97,12 +97,13 @@ class RedisCache(BaseCache):
             delete_keys.append(CACHE_PREFIX + key)
             if key in self._memory_cache:
                 del self._memory_cache[key]
-        try:
-            conn = await self.get_redis()
-            await conn.delete(*delete_keys)
-            logger.info('Deleted cache keys {}'.format(delete_keys))
-        except:
-            logger.warning('Error deleting cache keys {}'.format(delete_keys), exc_info=True)
+        if len(delete_keys) > 0:
+            try:
+                conn = await self.get_redis()
+                await conn.delete(*delete_keys)
+                logger.info('Deleted cache keys {}'.format(delete_keys))
+            except:
+                logger.warning('Error deleting cache keys {}'.format(delete_keys), exc_info=True)
 
     async def store_object(self, obj, pickled):
         if len(self._stored_objects) < self.max_publish_objects:

@@ -1,7 +1,8 @@
 1.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix using redis.delete when keys are of length 0
+  [vangheem]
 
 
 1.1.1 (2018-01-17)
