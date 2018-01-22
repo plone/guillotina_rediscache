@@ -100,9 +100,13 @@ class RedisCache(BaseCache):
         if len(delete_keys) > 0:
             try:
                 conn = await self.get_redis()
-                await conn.delete(*delete_keys)
+                if self._settings.get('cluster_mode', False):
+                    for key in delete_keys:
+                        await conn.delete(key)
+                else:
+                    await conn.delete(*delete_keys)
                 logger.info('Deleted cache keys {}'.format(delete_keys))
-            except:
+            except Exception:
                 logger.warning('Error deleting cache keys {}'.format(delete_keys), exc_info=True)
 
     async def store_object(self, obj, pickled):

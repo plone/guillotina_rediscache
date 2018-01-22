@@ -11,7 +11,8 @@ app_settings = {
         'pool': {
             'minsize': 5,
             'maxsize': 100
-        }
+        },
+        'cluster_mode': False
     }
 }
 

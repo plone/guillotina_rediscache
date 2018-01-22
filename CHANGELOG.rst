@@ -1,7 +1,9 @@
 1.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Be able to disable deleting group of cache keys together with `cluster_mode`
+  option.
+  [vangheem]
 
 
 1.1.2 (2018-01-17)
