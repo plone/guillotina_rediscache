@@ -1,4 +1,4 @@
-1.1.3 (unreleased)
+1.1.3 (2018-01-22)
 ------------------
 
 - Be able to disable deleting group of cache keys together with `cluster_mode`
