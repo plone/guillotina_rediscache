@@ -2,16 +2,16 @@ from guillotina import configure
 from guillotina.interfaces import IContainer
 from guillotina_rediscache import cache
 
+import aioredis
+
 
 @configure.service(context=IContainer, name='@redis-cache-stats', method='GET',
                    permission='guillotina_rediscache.Manage')
 async def stats(context, request):
     memory_cache = cache.get_memory_cache()
 
-    pool = await cache.get_redis_pool()
-    conn = await pool.acquire()
-    redis_data = await conn.info()
-    pool.release(conn)
+    redis = aioredis.Redis(await cache.get_redis_pool())
+    redis_data = await redis.info()
     return {
         'in-memory': {
             'size': len(memory_cache),

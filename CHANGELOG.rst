@@ -1,7 +1,8 @@
 1.1.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix cache stats endpoint
+  [vangheem]
 
 
 1.1.3 (2018-01-22)
