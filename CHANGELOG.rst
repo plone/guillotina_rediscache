@@ -1,4 +1,4 @@
-1.1.4 (unreleased)
+1.1.4 (2018-02-15)
 ------------------
 
 - Fix cache stats endpoint
