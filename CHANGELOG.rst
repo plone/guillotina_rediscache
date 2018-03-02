@@ -1,4 +1,4 @@
-1.1.6 (unreleased)
+1.1.6 (2018-03-01)
 ------------------
 
 - Handle errors while canceling task init task
