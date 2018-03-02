@@ -1,4 +1,4 @@
-1.1.5 (unreleased)
+1.1.5 (2018-03-01)
 ------------------
 
 - Handle errors while cancelling task
