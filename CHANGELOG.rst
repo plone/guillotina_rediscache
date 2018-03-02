@@ -1,7 +1,8 @@
 1.1.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Handle errors while cancelling task
+  [vangheem]
 
 
 1.1.4 (2018-02-15)

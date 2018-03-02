@@ -51,8 +51,12 @@ class RedisChannelUtility:
     async def finalize(self, app):
         settings = app_settings['redis']
         if self._redis is not None:
-            await self._redis.unsubscribe(settings['updates_channel'])
-        await cache.close_redis_pool()
+            try:
+                await self._redis.unsubscribe(settings['updates_channel'])
+                await cache.close_redis_pool()
+            except (asyncio.CancelledError, RuntimeError):
+                # task cancelled, let it die
+                return
 
     @profilable
     async def invalidate(self, data):
