@@ -39,9 +39,9 @@ class RedisChannelUtility:
                         await self.invalidate(msg)
                     except (TypeError, pickle.UnpicklingError):
                         pass
-            except asyncio.CancelledError:
+            except (asyncio.CancelledError, RuntimeError):
                 # task cancelled, let it die
-                pass
+                return
             except Exception:
                 logger.warn(
                     'Error subscribing to redis changes. Waiting before trying again',

@@ -1,13 +1,14 @@
 1.1.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Handle errors while canceling task init task
+  [vangheem]
 
 
 1.1.5 (2018-03-01)
 ------------------
 
-- Handle errors while cancelling task
+- Handle errors while canceling task
   [vangheem]
 
 
