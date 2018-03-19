@@ -1,4 +1,4 @@
-1.3.1 (unreleased)
+1.3.1 (2018-03-19)
 ------------------
 
 - Fix redis file manager finish method
