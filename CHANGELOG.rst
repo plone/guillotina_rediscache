@@ -1,7 +1,8 @@
-1.2.1 (unreleased)
+1.3.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Provide redis file manager
+  [vangheem]
 
 
 1.2.0 (2018-03-14)
