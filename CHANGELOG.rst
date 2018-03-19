@@ -1,7 +1,8 @@
 1.3.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix redis file manager finish method
+  [vangheem]
 
 
 1.3.0 (2018-03-19)

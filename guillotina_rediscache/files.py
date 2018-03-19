@@ -58,8 +58,9 @@ class RedisFileDataManager(DBDataManager):
         await self.save()
 
     async def finish(self, values=None):
-        await super().finish(values=values)
+        val = await super().finish(values=values)
         # and clear the cache key
         redis = await self.get_redis()
         key = await self.get_key()
         await redis.delete(key)
+        return val
