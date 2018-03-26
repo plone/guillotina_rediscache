@@ -1,4 +1,4 @@
-1.3.2 (unreleased)
+1.3.2 (2018-03-26)
 ------------------
 
 - Use after commit hook to update data for file manager implementation
