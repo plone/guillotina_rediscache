@@ -1,7 +1,8 @@
 1.3.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Use after commit hook to update data for file manager implementation
+  [vangheem]
 
 
 1.3.1 (2018-03-19)

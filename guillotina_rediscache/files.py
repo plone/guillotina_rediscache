@@ -1,5 +1,6 @@
 from guillotina.files.adapter import DBDataManager
 from guillotina.renderers import GuillotinaJSONEncoder
+from guillotina.transactions import get_transaction
 from guillotina_rediscache import cache
 
 import aioredis
@@ -18,7 +19,7 @@ class RedisFileDataManager(DBDataManager):
         # preload data
         if self._data is None:
             redis = await self.get_redis()
-            key = await self.get_key()
+            key = self.get_key()
             data = await redis.get(key)
             if not data:
                 self._data = {}
@@ -28,15 +29,16 @@ class RedisFileDataManager(DBDataManager):
 
     async def start(self):
         self.protect()
-
         self._data.clear()
-        self._data['last_activity'] = time.time()
-        if self._loaded:
-            await self.save()
 
     async def save(self):
+        txn = get_transaction(self.request)
+        txn.add_after_commit_hook(self._save)
+
+    async def _save(self):
         redis = await self.get_redis()
-        key = await self.get_key()
+        key = self.get_key()
+        self._data['last_activity'] = time.time()
         await redis.set(key, json.dumps(self._data, cls=GuillotinaJSONEncoder))
         await redis.expire(key, self._ttl)
 
@@ -46,7 +48,7 @@ class RedisFileDataManager(DBDataManager):
             self._redis = aioredis.Redis(conn)
         return self._redis
 
-    async def get_key(self):
+    def get_key(self):
         # only need 1 write to save upload object id...
         return '{}-{}'.format(
             self.context._p_oid,
@@ -55,12 +57,15 @@ class RedisFileDataManager(DBDataManager):
 
     async def update(self, **kwargs):
         self._data.update(kwargs)
-        await self.save()
 
     async def finish(self, values=None):
         val = await super().finish(values=values)
+        txn = get_transaction(self.request)
+        txn.add_after_commit_hook(self._delete_key)
+        return val
+
+    async def _delete_key(self):
         # and clear the cache key
         redis = await self.get_redis()
-        key = await self.get_key()
+        key = self.get_key()
         await redis.delete(key)
-        return val
