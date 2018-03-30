@@ -4,7 +4,6 @@
   "databases": [{
     "db": {
       "storage": "postgresql",
-      "transaction_strategy": "resolve",
       "cache_strategy": "redis",
       "dsn": {
         "scheme": "postgres",
@@ -51,7 +50,7 @@
     },
     "loggers": {
       "guillotina_rediscache": {
-        "level": "DEBUG",
+        "level": "WARN",
         "handlers": ["console"],
         "propagate": 0
       }
