@@ -1,7 +1,8 @@
 1.3.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Upgrade testing for guillotina 3.0
+  [vangheem]
 
 
 1.3.2 (2018-03-26)

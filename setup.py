@@ -6,7 +6,8 @@ from setuptools import setup
 setup(
     name='guillotina_rediscache',
     version='1.3.3.dev0',
-    description='guillotina cache implementation using redis + lru in-memory cache',
+    description='guillotina cache implementation using '
+                'redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
                       open('CHANGELOG.rst').read()),
     keywords=['asyncio', 'REST', 'guillotina', 'cache', 'redis'],
@@ -40,10 +41,10 @@ setup(
             'pytest',
             'docker',
             'backoff',
-            'psycopg2',
             'pytest-asyncio<=0.5.0',
             'pytest-aiohttp',
-            'pytest-cov'
+            'pytest-cov',
+            'pytest-docker-fixtures>=1.1.0'
         ]
     }
 )

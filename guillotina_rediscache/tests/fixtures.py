@@ -1,7 +1,5 @@
 from guillotina import testing
-from guillotina_rediscache.tests.docker_redis import redis_image
 
-import os
 import pytest
 
 
@@ -13,8 +11,8 @@ def settings_configurator(settings):
     del settings['static']
     del settings['jsapps']
     settings["redis"] = {
-        'host': getattr(redis, 'host', 'localhost'),
-        'port': getattr(redis, 'port', 6379),
+        'host': getattr(redis_container, 'host', 'localhost'),
+        'port': getattr(redis_container, 'port', 6379),
         'ttl': 3600,
         'memory_cache_size': 1000,
         'updates_channel': 'guillotina',
@@ -29,20 +27,8 @@ testing.configure_with(settings_configurator)
 
 
 @pytest.fixture(scope='session')
-def redis():
-    """
-    detect travis, use travis's postgres; otherwise, use docker
-    """
-    if 'TRAVIS' in os.environ:
-        host = 'localhost'
-        port = 6379
-    else:
-        host, port = redis_image.run()
+def redis_container(redis):
+    setattr(redis, 'host', redis[0])
+    setattr(redis, 'port', redis[1])
 
-    setattr(redis, 'host', host)
-    setattr(redis, 'port', port)
-
-    yield host, port  # provide the fixture value
-
-    if 'TRAVIS' not in os.environ:
-        redis_image.stop()
+    yield redis
