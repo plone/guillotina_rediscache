@@ -28,7 +28,7 @@ testing.configure_with(settings_configurator)
 
 @pytest.fixture(scope='session')
 def redis_container(redis):
-    setattr(redis, 'host', redis[0])
-    setattr(redis, 'port', redis[1])
+    setattr(redis_container, 'host', redis[0])
+    setattr(redis_container, 'port', redis[1])
 
     yield redis
