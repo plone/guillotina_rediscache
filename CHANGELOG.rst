@@ -1,4 +1,4 @@
-1.3.3 (unreleased)
+1.3.3 (2018-04-03)
 ------------------
 
 - Upgrade testing for guillotina 3.0

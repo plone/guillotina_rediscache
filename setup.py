@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='guillotina_rediscache',
-    version='1.3.3.dev0',
+    version='1.3.3',
     description='guillotina cache implementation using '
                 'redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
