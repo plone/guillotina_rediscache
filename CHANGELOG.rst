@@ -1,7 +1,8 @@
 1.3.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix fixture
+  [vangheem]
 
 
 1.3.3 (2018-04-03)
