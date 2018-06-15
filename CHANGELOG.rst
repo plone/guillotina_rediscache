@@ -1,7 +1,8 @@
-1.3.5 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Cache based on memory size instead of total number of keys
+  [jordic]
 
 
 1.3.4 (2018-04-03)

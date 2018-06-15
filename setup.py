@@ -11,7 +11,7 @@ module1 = Extension(
 
 setup(
     name='guillotina_rediscache',
-    version='1.3.5.dev0',
+    version='2.0.0.dev0',
     description='guillotina cache implementation using '
                 'redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
