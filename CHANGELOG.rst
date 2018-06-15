@@ -1,4 +1,4 @@
-2.0.1 (unreleased)
+2.0.1 (2018-06-15)
 ------------------
 
 - Change default cache size to 209715200
