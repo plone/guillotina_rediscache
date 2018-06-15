@@ -1,4 +1,4 @@
-2.0.0 (unreleased)
+2.0.0 (2018-06-15)
 ------------------
 
 - Cache based on memory size instead of total number of keys
