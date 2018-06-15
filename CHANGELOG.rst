@@ -1,7 +1,8 @@
 2.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Change default cache size to 209715200
+  [vangheem]
 
 
 2.0.0 (2018-06-15)

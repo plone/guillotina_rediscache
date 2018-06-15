@@ -30,7 +30,7 @@ app_settings for this::
           'host': 'localhost',
           'port': 6379,
           'ttl': 3600,
-          'memory_cache_size': 1000,
+          'memory_cache_size': 209715200,
           'pool': {
               'minsize': 5,
               'maxsize': 100
