@@ -1,7 +1,8 @@
 2.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Improve size calculation
+  [jordic]
 
 
 2.0.1 (2018-06-15)
