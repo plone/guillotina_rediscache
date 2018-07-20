@@ -1,7 +1,8 @@
 2.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Remove old guillotina compatibility for py 3.7
+  [bloodbare]
 
 
 2.0.2 (2018-06-18)
