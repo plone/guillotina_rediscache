@@ -1,4 +1,4 @@
-2.0.3 (unreleased)
+2.0.3 (2018-07-20)
 ------------------
 
 - Remove old guillotina compatibility for py 3.7
