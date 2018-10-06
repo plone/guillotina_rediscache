@@ -1,4 +1,4 @@
-2.0.4 (unreleased)
+2.0.4 (2018-10-06)
 ------------------
 
 - Do not fail memory cache if not configured
