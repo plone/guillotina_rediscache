@@ -1,7 +1,8 @@
 2.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Do not fail memory cache if not configured
+  [vangheem]
 
 
 2.0.3 (2018-07-20)
