@@ -1,4 +1,4 @@
-2.1.0 (unreleased)
+2.1.0 (2018-11-20)
 ------------------
 
 - Upgrade to Guillotina >= 4.3
