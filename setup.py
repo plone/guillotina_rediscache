@@ -11,7 +11,7 @@ module1 = Extension(
 
 setup(
     name='guillotina_rediscache',
-    version='2.0.5.dev0',
+    version='2.1.0.dev0',
     description='guillotina cache implementation using '
                 'redis + lru in-memory cache',
     long_description=(open('README.rst').read() + '\n' +
@@ -37,7 +37,7 @@ setup(
     ext_modules=[module1],
     packages=find_packages(),
     install_requires=[
-        'guillotina>=2.3.10',
+        'guillotina>=4.3.2',
         'aioredis>=1.0.0',
         'ujson'
     ],
@@ -48,7 +48,7 @@ setup(
             'lru-dict',
             'docker',
             'backoff',
-            'pytest-asyncio<=0.5.0',
+            'pytest-asyncio',
             'pytest-aiohttp',
             'pytest-cov',
             'pytest-docker-fixtures>=1.1.0'
