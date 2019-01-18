@@ -1,4 +1,4 @@
-2.1.1 (unreleased)
+2.1.1 (2019-01-18)
 ------------------
 
 - When applying invalidations, make sure to not allow another
