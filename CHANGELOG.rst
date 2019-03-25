@@ -1,7 +1,8 @@
 2.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Not loading utility by default.
+  [bloodbare]
 
 
 2.1.1 (2019-01-18)

@@ -1,9 +1,7 @@
 from guillotina import app_settings
-from guillotina import configure
 from guillotina.profile import profilable
 from guillotina_rediscache import cache
 from guillotina_rediscache import serialize
-from guillotina_rediscache.interfaces import IRedisChannelUtility
 
 import aioredis
 import asyncio
@@ -14,7 +12,6 @@ import pickle
 logger = logging.getLogger('guillotina_rediscache')
 
 
-@configure.utility(provides=IRedisChannelUtility)
 class RedisChannelUtility:
 
     def __init__(self, settings=None, loop=None):
