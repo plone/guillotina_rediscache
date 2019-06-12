@@ -1,4 +1,4 @@
-2.1.2 (unreleased)
+2.1.2 (2019-06-12)
 ------------------
 
 - Use expire param with setting redis cache value on file data manager
