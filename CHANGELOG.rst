@@ -1,7 +1,8 @@
 2.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Restrict version to guillotina < 5
+  [vangheem]
 
 
 2.1.2 (2019-06-12)
