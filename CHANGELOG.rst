@@ -1,4 +1,4 @@
-2.1.3 (unreleased)
+2.1.3 (2019-06-18)
 ------------------
 
 - Restrict version to guillotina < 5
