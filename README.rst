@@ -1,6 +1,11 @@
 Introduction
 ============
 
+WARNING: THIS IMPLEMENTATION WAS MOVED INTO GUILLOTINA CORE IN VERSION 5. THIS IS NO LONGER MAINTAINED.
+
+PLEASE USE `guillotina.contrib.cache` with `guillotina.contrib.redis`
+
+
 .. image:: https://travis-ci.org/guillotinaweb/guillotina_rediscache.svg?branch=master
    :target: https://travis-ci.org/guillotinaweb/guillotina_rediscache
 
